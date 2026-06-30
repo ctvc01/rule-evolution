@@ -36,8 +36,17 @@ git clone https://github.com/你的用户名/rule-evolution.git ~/.codex/skills/
 
 ## ⚙️ 工作流程
 
-当用户触发“使用 rule-evolution 整理经验”时，AI 代理会遵循以下步骤：
-1. **提取经验**：分析当前会话日志（Transcript），梳理正面规范与负面案例。
-2. **防冲突检测**：读取当前的全局 `AGENTS.md` 文件，去重并排除与已有主规约和草案条目的冲突。
-3. **备份隔离**：在物理写入前，创建 `.bak` 备份并执行 Git 提交监控。
-4. **合并写入**：将新提炼的经验追加写入到全局 `AGENTS.md` 底部的 `<!-- rule-evolution:draft-start/end -->` 草案规则定位锚点中。写入时需遵循**双语分层选择**（通用哲学架构用英文/中英专业对照，本地网络排灾配置用精炼中文）以及**「正反对比」立体格式**（正向规约 + Anti-Pattern 负面后果），验证无误后清理备份。
+在日常开发及会话结束前，AI 代理会遵循以下步骤实现规则进化：
+
+0. **主动触发 (Trigger Heuristics)**：当本次开发经历曲折调试（报错 $\ge 3$ 次）、多文件修改（$\ge 3$ 个核心文件）或发生重大架构变更时，Agent 会主动 nudge 提示用户进行经验沉淀。
+1. **提取经验 (Extract)**：分析会话历史，梳理出面向未来的正面规范与防呆负面案例。
+2. **去重与查重 (Conflict & Duplicate Check)**：
+   - 提取规则实体词，使用终端 `grep` 在全局规则文件中进行跨会话关联检索；
+   - 与主分类、草案区和偏好区的规则做相似度对比以防冗余，并对逻辑冲突进行预警。
+3. **备份隔离 (Pre-Write Protection)**：物理写入前自动创建 `AGENTS.md.bak` 备份并锁定 Git 提交。
+4. **合并与三层锚点写入 (Formatting & Multi-Layer Anchor)**：
+   - 依据规则属性精准写入 `core`、`draft` 或 `user-prefs` 对称锚点区间；
+   - 遵循**双语分层**（哲学/架构英文，本地环境/网络中文）与**「正反对比」立体格式**写入；
+   - 行尾强制追加元数据标记：`<!-- hits:1 created:YYYY-MM-DD session:xxxxxx -->`。
+5. **安全校验 (Verify)**：校验文件和 HTML 锚点完整性，清理备份。
+6. **草稿晋升评估 (Promotion Check)**：在会话启动时，Agent 自动对 Draft 中被复用指导的规则进行 `hits` 计数更新。当 `hits` 达到 3 次时，nudge 建议并协助用户将其合并晋升至 Core 主板块。
